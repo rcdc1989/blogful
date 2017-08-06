@@ -4,6 +4,7 @@ from . import app
 from .database import session, Entry
 
 
+#Default paginated view
 PAGINATE_BY = 10
 
 @app.route("/")
@@ -33,10 +34,30 @@ def entries(page=1):
         total_pages=total_pages
     )
 
+#view for displaying a single entry
+@app.route("/entry/<int:ID>")
+def view_entry(ID=1):
+    
+    #In the database, ID is indexed at 1. 
+    #This is OK, here we assume that the user knows the ID number from database
+    entry = session.query(Entry).get(ID)
+    count = session.query(Entry).count()
+    has_prev = ID > 1
+    has_next = ID < count
+    
+    return render_template("single_entry.html",
+        entry=entry,
+        ID=ID,
+        has_next=has_next,
+        has_prev=has_prev
+    )
+
+#view for "add entry" form
 @app.route("/entry/add", methods=["GET"])
 def add_entry_get():
     return render_template("add_entry.html")
 
+#view for handling "POST" output
 @app.route("/entry/add", methods=["POST"])
 def add_entry_post():
     entry = Entry(

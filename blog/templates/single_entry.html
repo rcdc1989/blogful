@@ -1,0 +1,21 @@
+{% import "macros.html" as macros %}
+{% extends "base.html" %}
+{% block content %}
+
+{{ macros.render_entry(entry) }}
+
+<ul class="pager">
+    {% if has_prev %}
+    <li class="previous" >
+    <a href="{{ url_for('view_entry', ID=entry.id-1) }}">&larr; Previous</a>
+    </li>
+    {% endif %}
+    {% if has_next %}
+    <li class="next">
+    <a href="{{ url_for('view_entry', ID=entry.id+1) }}">&rarr; Next</a>
+    </li>
+    {% endif %}
+</ul>
+
+
+{% endblock %}
