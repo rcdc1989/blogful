@@ -10,6 +10,11 @@
     <a href="{{ url_for('view_entry', ID=prev_id) }}">&larr; Previous</a>
     </li>
     {% endif %}
+    
+    <li>
+    <a href="{{ url_for('edit_entry_get', ID=ID) }}"> Edit</a>
+    </li>
+    
     {% if has_next %}
     <li class="next">
     <a href="{{ url_for('view_entry', ID=next_id) }}">&rarr; Next</a>
