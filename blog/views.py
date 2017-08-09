@@ -16,15 +16,21 @@ PAGINATE_BY = 10
 @app.route("/")
 @app.route("/page/<int:page>")
 def entries(page=1):
-    # Zero-indexed page
-    page_index = page - 1
-
     count = session.query(Entry).count()
+ 
+    paginate_by = int(request.args.get("limit", PAGINATE_BY))
+    
+    total_pages = (count - 1) // paginate_by + 1
+    page_index = page - 1
+    
+    # just reset if we are out of bounds with new limit
+    if paginate_by != PAGINATE_BY:
+        if page_index > total_pages - 1:
+            page_index = 0
+        
+    start = page_index * paginate_by
+    end = start + paginate_by
 
-    start = page_index * PAGINATE_BY
-    end = start + PAGINATE_BY
-
-    total_pages = (count - 1) // PAGINATE_BY + 1
     has_next = page_index < total_pages - 1
     has_prev = page_index > 0
 
@@ -38,8 +44,15 @@ def entries(page=1):
         has_prev=has_prev,
         page=page,
         total_pages=total_pages,
-        show_delete=True
+        show_delete=True,
+        PAGINATE_BY = PAGINATE_BY
     )
+
+@app.route("/", methods=["POST"])    
+@app.route("/page/<int:page>?limit=<PAGINATE_BY>", methods=["POST"])
+def entries_post(page=1,PAGINATE_BY=10):
+    
+    return redirect(url_for("entries", page=1))
 
 #view for displaying a single entry
 @app.route("/entry/<int:ID>")

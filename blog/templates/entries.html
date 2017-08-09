@@ -12,6 +12,19 @@
     <a href="{{ url_for('entries', page=page + 1) }}">&larr; Older</a>
     </li>
     {% endif %}
+    
+    <form class="form-inline">
+      <label class="mr-sm-2" for="inlineFormCustomSelect">Entries/page</label>
+      <select class="custom-select mb-2 mr-sm-2 mb-sm-0" id="inlineFormCustomSelect" name="limit">
+        
+        <option value="10">10</option>
+        <option value="25">25</option>
+        <option value="50">50</option>
+        <option value="75">75</option>
+      </select>
+      <button type="submit" class="btn btn-primary btn-xs">Apply</button>
+    </form>
+    
     {% if has_prev %}
     <li class="next">
     <a href="{{ url_for('entries', page=page - 1) }}">&rarr; Newer</a>
