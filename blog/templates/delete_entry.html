@@ -2,25 +2,13 @@
 {% extends "base.html" %}
 {% block content %}
 
-{{ macros.render_entry(entry) }}
-
-
 <h1>
-    Edit Entry
+    Delete This Entry?
 </h1>
-
+{{ macros.render_entry(entry) }}
 <form role="form" method="POST">
-    <div class="form-group">
-        <label for="title">Title</label>
-        <input type="text" class="form-control" id="title" name="title" value="{{title}}" required>
-    </div>
-    <div class="form-group">
-        <label for="content">Content</label>
-        <textarea class="form-control" id="content" name="content" rows="20" required>"{{content}}"</textarea>
-    </div>
-    <button type="submit" class="btn btn-default">Submit</button>
+    <button type="submit" class="btn btn-danger" id="confirmed" >Confirm</button>
+    <a href="{{ url_for('view_entry', ID=ID) }}" class="btn btn-default" role="button">Cancel</a> 
 </form>
-
-
 
 {% endblock %}

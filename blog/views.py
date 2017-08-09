@@ -37,39 +37,31 @@ def entries(page=1):
         has_next=has_next,
         has_prev=has_prev,
         page=page,
-        total_pages=total_pages
+        total_pages=total_pages,
+        show_delete=True
     )
 
 #view for displaying a single entry
 @app.route("/entry/<int:ID>")
 def view_entry(ID=1):
     
-    #In the database, ID is indexed at 1. 
-    #This is OK, here we assume that the user knows the ID number from database
     entry = session.query(Entry).get(ID)
     query_list = session.query(Entry.id).order_by(Entry.id).all()
-    entries_id = [i[0] for i in query_list]
     
-    #we increment the index number to get position that is aligned with "ID"
-    position = entries_id.index(ID) 
-    count = session.query(Entry).count()
-    print(position)
-    print(count)
+    prev_id = session.query(Entry.id).order_by(Entry.id.desc()).filter(Entry.id < ID).first()
+    next_id = session.query(Entry.id).order_by(Entry.id.desc()).filter(Entry.id > ID).first()
     
-    #to handle case where id numbers are not contiguous (because of deletions)
+    if prev_id == None:
+        has_prev = False
+    else:
+        has_prev = True
+        prev_id = prev_id[0] #get prev_id out of tuple
     
-    has_prev = position > 0 #check entry is not first in the list
-    has_next = position < count - 1 #check entry is not last in the list
-    
-    #we use "try" to handle cases where there is no
-    try:
-        next_id = entries_id[position + 1]#get id for next entry
-    except IndexError:
-        next_id = ID
-    try:
-        prev_id = entries_id[position - 1]
-    except IndexError:
-        prev_id = ID
+    if next_id == None:
+        has_next = False
+    else:
+        has_next = True
+        next_id = next_id[0]
         
     return render_template("single_entry.html",
         entry=entry,
@@ -116,13 +108,13 @@ def add_entry_post():
 @app.route("/entry/<int:ID>/edit", methods=["GET"])
 def edit_entry_get(ID=1):
     
-    content = session.query(Entry.content).filter(Entry.id==ID).first()[0]
-    title = session.query(Entry.title).filter(Entry.id==ID).first()[0]
+    entry = session.query(Entry).get(ID)
     
     return render_template("edit_entry.html",
         ID=ID,
-        content=content,
-        title=title
+        content=entry.content,
+        title=entry.title,
+        show_delete=False
         )
 
 #EDIT: view for handling "POST" output
@@ -141,25 +133,25 @@ def edit_entry_post(ID=1):
  |___/\___|_\___|\__\___| |___|_||_\__|_| |_\___/__/
                                                     
 """
-
-#view for displaying a single entry
-@app.route("/delete/<int:ID>/confirm", methods = ["GET"])
-def delete_entry(ID=1):
+@app.route("/delete/<int:ID>/confirm", methods=["GET"])
+def delete_entry_get(ID=1):
     
     entry = session.query(Entry).get(ID)
-
+    
+    do_not_delete = True # some fun check_can_delete()
+    
     return render_template("delete_entry.html",
         entry=entry,
         ID=ID,
+        show_delete=False
         )
-        
 
-#EDIT: view for handling "POST" output
 @app.route("/delete/<int:ID>/confirm", methods=["POST"])
 def delete_entry_post(ID=1):
-    confirmed = request.form["confirm"]
-    if confirmed:
-        entry = session.query(Entry).get(ID)
-        session.delete(entry)
-        session.commit()
+
+    entry = session.query(Entry).get(ID)
+    session.delete(entry)
+    session.commit()
+    
     return redirect(url_for("entries"))
+    

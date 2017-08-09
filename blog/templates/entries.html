@@ -3,7 +3,7 @@
 {% block content %}
 
 {% for entry in entries %}
-{{ macros.render_entry(entry) }}
+{{ macros.render_entry(entry, show_delete) }}
 {% endfor %}
 
 <ul class="pager">

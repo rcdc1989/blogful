@@ -15,5 +15,8 @@
         <textarea class="form-control" id="content" name="content" rows="20" required>{{content}}</textarea>
     </div>
     <button type="submit" class="btn btn-default">Submit</button>
+    <a href="{{ url_for('delete_entry_get', ID=ID) }}" class="btn btn-default" role="button">Delete</a> 
+    <a href="{{ url_for('view_entry', ID=ID) }}" class="btn btn-default" role="button">Cancel</a> 
+    
 </form>
 {% endblock %}
