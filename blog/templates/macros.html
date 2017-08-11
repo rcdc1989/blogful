@@ -4,6 +4,7 @@
         <ul class="list-unstyled">
             <li>
                 {{ entry.datetime | dateformat("%d/%m/%y") }}
+                {{ entry.author.name }}
             </li>
 
             {% if show_delete %}
