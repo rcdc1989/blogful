@@ -1,9 +1,13 @@
 from flask import render_template
 from flask import request, redirect, url_for
-from flask import current_user
-from flask_login import login_required
+from flask_login import login_required, current_user
 from . import app
 from .database import session, Entry
+from werkzeug.security import generate_password_hash
+from flask import flash
+from flask_login import login_user, logout_user
+from werkzeug.security import check_password_hash
+from .database import User
 
 """
  __   ___              ___     _       _        
@@ -18,8 +22,12 @@ PAGINATE_BY = 10
 @app.route("/")
 @app.route("/page/<int:page>")
 def entries(page=1):
+ 
     count = session.query(Entry).count()
  
+    # request.args is a python dictionary. The line below is similar to:
+    # if request.args['limit'] is None:
+    #     paginate_by = PAGINATE_BY
     paginate_by = int(request.args.get("limit", PAGINATE_BY))
     
     total_pages = (count - 1) // paginate_by + 1
@@ -39,6 +47,14 @@ def entries(page=1):
     entries = session.query(Entry)
     entries = entries.order_by(Entry.datetime.desc())
     entries = entries[start:end]
+    
+    #rudimentary login check, if a user is logged in, then they can edit
+    # logged_in = False
+    # try:
+    #     if current_user.id != "":
+    #         logged_in = True
+    # except AttributeError:
+    #     pass
 
     return render_template("entries.html",
         entries=entries,
@@ -46,7 +62,7 @@ def entries(page=1):
         has_prev=has_prev,
         page=page,
         total_pages=total_pages,
-        show_delete=True,
+        show_delete=current_user.is_authenticated,
         PAGINATE_BY = PAGINATE_BY
     )
 
@@ -185,10 +201,7 @@ def delete_entry_post(ID=1):
            |___/       
 """
 
-from flask import flash
-from flask_login import login_user
-from werkzeug.security import check_password_hash
-from .database import User
+
 
 @app.route("/login", methods=["GET"])
 def login_get():
@@ -205,3 +218,50 @@ def login_post():
 
     login_user(user)
     return redirect(request.args.get('next') or url_for("entries"))
+    
+@app.route("/logout", methods=["GET"])
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for("entries"))
+    
+"""
+  ___ _             _   _      
+ / __(_)__ _ _ _   | | | |_ __ 
+ \__ \ / _` | ' \  | |_| | '_ \
+ |___/_\__, |_||_|  \___/| .__/
+       |___/             |_|   
+"""
+
+@app.route("/signup", methods=["GET"])
+def signup_get():
+    return render_template("signup.html")    
+
+@app.route("/signup", methods=["POST"])
+def signup_post():
+    email = request.form["email"]
+    password = request.form["password"]
+    confirm = request.form["confirm"]
+    username = request.form["username"]
+    session.query(User).filter_by(email=email).first()
+    
+    if session.query(User).filter_by(email=email).first():
+        flash("User with that email address already exists.", "danger")
+    elif session.query(User).filter_by(name=username).first():
+        flash("User with that username address already exists.", "danger")
+    elif confirm != password:
+        flash("Passwords don't match.", "danger")
+    else:
+        password = ""
+    
+        user = User(name=username, 
+                    email=email,
+                    password=generate_password_hash(password))
+                    
+        session.add(user)
+        session.commit()
+        login_user(user)
+        return redirect(request.args.get('next') or url_for("entries"))
+    
+
+    
