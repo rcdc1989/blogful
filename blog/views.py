@@ -97,6 +97,7 @@ def view_entry(ID=1):
     return render_template("single_entry.html",
         entry=entry,
         ID=ID,
+        show_delete=current_user.is_authenticated,
         has_next=has_next,
         has_prev=has_prev,
         next_id = next_id,
@@ -144,7 +145,7 @@ def add_entry_post():
 def edit_entry_get(ID=1):
     
     entry = session.query(Entry).get(ID)
-    
+
     return render_template("edit_entry.html",
         ID=ID,
         content=entry.content,
@@ -200,9 +201,6 @@ def delete_entry_post(ID=1):
  |____\___/\__, |_|_||_|
            |___/       
 """
-
-
-
 @app.route("/login", methods=["GET"])
 def login_get():
     return render_template("login.html")    
@@ -212,10 +210,11 @@ def login_post():
     email = request.form["email"]
     password = request.form["password"]
     user = session.query(User).filter_by(email=email).first()
+    print(user)
+    print(check_password_hash(user.password, password))
     if not user or not check_password_hash(user.password, password):
         flash("Incorrect username or password", "danger")
         return redirect(url_for("login_get"))
-
     login_user(user)
     return redirect(request.args.get('next') or url_for("entries"))
     
@@ -252,8 +251,7 @@ def signup_post():
     elif confirm != password:
         flash("Passwords don't match.", "danger")
     else:
-        password = ""
-    
+        
         user = User(name=username, 
                     email=email,
                     password=generate_password_hash(password))
@@ -262,6 +260,8 @@ def signup_post():
         session.commit()
         login_user(user)
         return redirect(request.args.get('next') or url_for("entries"))
+    
+    return redirect(request.args.get('next') or url_for("signup_get"))
     
 
     

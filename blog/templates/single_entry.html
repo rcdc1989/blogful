@@ -2,7 +2,7 @@
 {% extends "base.html" %}
 {% block content %}
 
-{{ macros.render_entry(entry) }}
+{{ macros.render_entry(entry, show_delete,current_user.name) }}
 
 <ul class="pager">
     {% if has_prev %}
@@ -11,16 +11,11 @@
     </li>
     {% endif %}
     
-    <li>
-    <a href="{{ url_for('edit_entry_get', ID=ID) }}"> Edit</a>
-    </li>
-    
     {% if has_next %}
     <li class="next">
     <a href="{{ url_for('view_entry', ID=next_id) }}">&rarr; Next</a>
     </li>
     {% endif %}
 </ul>
-
 
 {% endblock %}
