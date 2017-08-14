@@ -21,7 +21,10 @@ class TestViews(unittest.TestCase):
         # Create an example user
         self.user = User(name="Alice", email="alice@example.com",
                          password=generate_password_hash("test"))
-        session.add(self.user)
+        self.entry = Entry(title="test entry", 
+                            content="test content",
+                            author=self.user)
+        session.add(self.user, self.entry)
         session.commit()
         
     def simulate_login(self):
@@ -40,12 +43,13 @@ class TestViews(unittest.TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertEqual(urlparse(response.location).path, "/")
         entries = session.query(Entry).all()
-        self.assertEqual(len(entries), 1)
+        self.assertEqual(len(entries), 2) #includes test entry in setup
 
         entry = entries[0]
         self.assertEqual(entry.title, "Test Entry")
         self.assertEqual(entry.content, "Test content")
         self.assertEqual(entry.author, self.user)
+        
 
     def tearDown(self):
         """ Test teardown """

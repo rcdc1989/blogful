@@ -210,8 +210,6 @@ def login_post():
     email = request.form["email"]
     password = request.form["password"]
     user = session.query(User).filter_by(email=email).first()
-    print(user)
-    print(check_password_hash(user.password, password))
     if not user or not check_password_hash(user.password, password):
         flash("Incorrect username or password", "danger")
         return redirect(url_for("login_get"))
